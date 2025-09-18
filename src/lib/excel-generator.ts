@@ -14,14 +14,23 @@ export const excelConfigSchema = z.object({
 });
 export type ExcelConfig = z.infer<typeof excelConfigSchema>;
 
-
-export function generateExcelFile(rows: ExcelField[], config: ExcelConfig): Blob {
+export function generateExcelFile(
+  rows: ExcelField[],
+  config: ExcelConfig
+): Blob {
   // Create a new workbook
   const workbook = XLSX.utils.book_new();
 
   // Prepare the data for the worksheet
   const worksheetData = [
-    ["Form Name", "Page", "Section", "Field Name", "Field Type", "Description / Options"],
+    [
+      "Form Name",
+      "Page",
+      "Section",
+      "Field Name",
+      "Field Type",
+      "Description / Options",
+    ],
     ...rows.map((row) => [
       row.formTitle,
       row.pageTitle,
@@ -81,13 +90,25 @@ export function generateExcelFile(rows: ExcelField[], config: ExcelConfig): Blob
 export function generateDetailedExcelFile(
   rows: ExcelField[],
   config: ExcelConfig,
-  formData: any
+  formData: {
+    name: string;
+    lineItems?: string[];
+    version?: string;
+    pages: string[];
+  }
 ): Blob {
   const workbook = XLSX.utils.book_new();
 
   // Main form definition sheet
   const mainSheetData = [
-    ["Form Name", "Page", "Section", "Field Name", "Field Type", "Description / Options"],
+    [
+      "Form Name",
+      "Page",
+      "Section",
+      "Field Name",
+      "Field Type",
+      "Description / Options",
+    ],
     ...rows.map((row) => [
       row.formTitle,
       row.pageTitle,

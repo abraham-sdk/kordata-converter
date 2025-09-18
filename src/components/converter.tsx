@@ -15,7 +15,7 @@ export default function Converter() {
   const [forms, setForms] = useState<FormDefinition[]>([]);
   const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
   //   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
-  const [excelConfig, setExcelConfig] = useState<ExcelConfig>({
+  const [excelConfig] = useState<ExcelConfig>({
     includeConditionalFields: true,
     includeLineItems: true,
     includeValidationRules: false,

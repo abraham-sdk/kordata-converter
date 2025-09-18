@@ -1,18 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Eye,
-  Expand,
-  FileText,
-  Signature,
-  Hash,
-  Clock,
-  CheckCircle,
-  List,
-  Info,
-  Lock,
-} from "lucide-react";
+import { Eye, Expand, FileText, Info } from "lucide-react";
 import {
   getFieldTypeIconComponent,
   mapFieldType,
@@ -45,15 +34,21 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
     );
   }
 
-  const formData = form.jsonContent as any;
+  const formData = form.jsonContent;
   const totalFields =
-    formData.pages?.sections?.reduce(
-      (total: number, page: any) => total + (page?.sections?.fields?.length || 0),
+    formData.pages?.reduce(
+      (total: number, page) =>
+        total +
+        (page.sections || [])?.reduce(
+          (acc, section) => acc + (section.fields?.length || 0),
+          0
+        ),
       0
     ) || 0;
-  const lineItemsCount = formData.lineItems
-    ? Object.keys(formData.lineItems).length
-    : 0;
+  //   const lineItemsCount = formData.lineItems
+  //     ? Object.keys(formData.lineItems).length
+  //     : 0;
+  const lineItemsCount = 0;
 
   return (
     <Card>
@@ -65,7 +60,7 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" data-testid="badge-form-name">
-              {formData.name || form.formName}
+              {formData.title || form.formName}
             </Badge>
             <Button variant="ghost" size="sm" data-testid="button-expand">
               <Expand className="h-4 w-4" />
@@ -90,7 +85,7 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
               className="text-2xl font-bold text-primary"
               data-testid="text-fields-count"
             >
-              {formData?.pages?.sections?.length}
+              {/* {formData?.pages?.sections?.length} */}0
             </div>
             <div className="text-sm text-muted-foreground">Sections</div>
           </div>
@@ -116,7 +111,7 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
 
         {/* Form Pages */}
         <div className="space-y-3">
-          {formData.pages?.map((page: any, pageIndex: number) => (
+          {formData.pages?.map((page, pageIndex: number) => (
             <div key={pageIndex} className="border border-border rounded-lg">
               <div className="flex items-center justify-between p-4 bg-muted/30">
                 <div className="flex items-center space-x-3">
@@ -126,58 +121,60 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
                       className="font-medium"
                       data-testid={`text-page-name-${pageIndex}`}
                     >
-                      {page.name}
+                      {page.title}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {page.fields?.length || 0} fields
+                      {page.sections?.length || 0} sections
                     </p>
                   </div>
                 </div>
               </div>
               <div className="p-4 space-y-2">
-                {page.fields?.map((field: any, fieldIndex: number) => (
-                  <div
-                    key={fieldIndex}
-                    className="flex items-center justify-between py-2 border-b border-border last:border-b-0"
-                  >
-                    <div className="flex items-center space-x-3">
-                      {(() => {
-                        const IconComponent = getFieldTypeIconComponent(
-                          field.type
-                        );
-                        return (
-                          <IconComponent className="h-4 w-4 text-muted-foreground" />
-                        );
-                      })()}
-                      <span
-                        className="text-sm"
-                        data-testid={`text-field-name-${pageIndex}-${fieldIndex}`}
-                      >
-                        {field.name}
-                      </span>
-                      {field.conditionalDisplay && (
-                        <Info className="h-3 w-3 text-blue-500" />
-                      )}
-                      {field.required && (
-                        <span className="text-red-500 text-xs">*</span>
-                      )}
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-xs"
-                      data-testid={`badge-field-type-${pageIndex}-${fieldIndex}`}
+                {page.sections?.map((section) =>
+                  section.fields?.map((field, fieldIndex) => (
+                    <div
+                      key={fieldIndex}
+                      className="flex items-center justify-between py-2 border-b border-border last:border-b-0"
                     >
-                      {mapFieldType(field.type)}
-                    </Badge>
-                  </div>
-                ))}
+                      <div className="flex items-center space-x-3">
+                        {(() => {
+                          const IconComponent = getFieldTypeIconComponent(
+                            field.fieldType
+                          );
+                          return (
+                            <IconComponent className="h-4 w-4 text-muted-foreground" />
+                          );
+                        })()}
+                        <span
+                          className="text-sm"
+                          data-testid={`text-field-name-${pageIndex}-${fieldIndex}`}
+                        >
+                          {field.title}
+                        </span>
+                        {field.displayWhen && (
+                          <Info className="h-3 w-3 text-blue-500" />
+                        )}
+                        {field.required && (
+                          <span className="text-red-500 text-xs">*</span>
+                        )}
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="text-xs"
+                        data-testid={`badge-field-type-${pageIndex}-${fieldIndex}`}
+                      >
+                        {mapFieldType(field.fieldType)}
+                      </Badge>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           ))}
         </div>
 
         {/* Line Items */}
-        {formData.lineItems && Object.keys(formData.lineItems).length > 0 && (
+        {/* {formData.lineItems && Object.keys(formData.lineItems).length > 0 && (
           <div className="space-y-3">
             <h4 className="font-medium text-sm text-muted-foreground">
               Line Items
@@ -238,7 +235,7 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
               )
             )}
           </div>
-        )}
+        )} */}
       </CardContent>
     </Card>
   );
