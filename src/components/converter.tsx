@@ -14,7 +14,7 @@ import { Footer } from "./layout/footer";
 export default function Converter() {
   const [forms, setForms] = useState<FormDefinition[]>([]);
   const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
-//   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  //   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
   const [excelConfig, setExcelConfig] = useState<ExcelConfig>({
     includeConditionalFields: true,
     includeLineItems: true,
@@ -36,13 +36,17 @@ export default function Converter() {
           //   if (field.calculation) {
           //     description += description ? ";" : "" + ("Function: " + field.calculation.function) + ("; Variables: " + JSON.stringify(field.calculation?.variables));
           //   }
-          if (field.displayWhen) {
-            description += "*Conditionally displayed*";
+          if (field.editable !== undefined && field.editable === false) {
+            description += description ? ";" : "" + "* Not Editable";
           }
 
-          if (String(field.fieldType).includes("entitySelect")) {
-            description += "(" + field.items?.join(",") + ")";
+          if (field.displayWhen) {
+            description += "* Conditionally displayed *";
           }
+
+        //   if (String(field.fieldType).includes("entitySelect")) {
+        //     description += "(" + field.items?.join(",") + ")";
+        //   }
           if (String(field.fieldType).includes("buttonBar")) {
             description += "(" + field.items?.join(",") + ")";
           }
