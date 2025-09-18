@@ -52,9 +52,9 @@ export default function Converter() {
           }
 
           excelFields.push({
-            formTitle: json.title || "Form Title",
-            pageTitle: page.title || "Default Page",
-            sectionTitle: section.title || "Default Section",
+            formTitle: json.title || "None",
+            pageTitle: page.title || "None",
+            sectionTitle: section.title || "None",
             fieldType: mapFieldType(field.fieldType),
             fieldName: field.title || field.id,
             description,
