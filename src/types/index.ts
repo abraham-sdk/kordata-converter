@@ -7,7 +7,14 @@ export interface FormDefinition {
   uploadedAt: Date;
 }
 
-interface FormJSONField {
+export interface FormFile {
+  id?: string;
+  fileName: string;
+  fileContent: string;
+  uploadedAt?: Date | string;
+}
+
+export interface FormJSONField {
   default?: unknown;
   displayOnly?: boolean;
   editable?: boolean;

@@ -1,3 +1,5 @@
+import pkg from "../../../package.json";
+
 export function Footer() {
   {
     /* Footer */
@@ -8,7 +10,7 @@ export function Footer() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-muted-foreground">
-              © 2025 Kordata.
+              © {new Date().getFullYear()} Kordata.
             </span>
             {/* <a
                 href="#"
@@ -24,11 +26,11 @@ export function Footer() {
               </a> */}
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-muted-foreground">Version 0.1.0</span>
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span className="text-xs text-muted-foreground">
-              Active
+              Version {pkg.version}
             </span>
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-xs text-muted-foreground">Active</span>
           </div>
         </div>
       </div>

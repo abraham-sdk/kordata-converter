@@ -3,14 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, File, X, CloudUpload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FormFile } from "@/types";
 
 interface FileUploadCardProps {
-  //   onFormUploaded: (formId: string) => void;
-  onFormUploaded: (fileName: string, fileContent: string) => void;
-  selectedFormId?: string | null;
+  onFormParsed: (file: FormFile) => void;
 }
 
-export function FileUploadCard({ onFormUploaded }: FileUploadCardProps) {
+export function FileUploadCard({ onFormParsed }: FileUploadCardProps) {
   const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -59,7 +58,11 @@ export function FileUploadCard({ onFormUploaded }: FileUploadCardProps) {
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const fileContent = e.target?.result as string;
-        onFormUploaded?.(file.name, fileContent);
+        onFormParsed?.({
+          fileName: file.name,
+          fileContent,
+          uploadedAt: new Date(),
+        });
       };
 
       reader.readAsText(file); // Read the file as text

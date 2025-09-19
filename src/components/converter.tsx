@@ -1,19 +1,21 @@
 "use client";
 
-import { FileUploadCard } from "./file-upload-card";
+// import { FileUploadCard } from "./file-upload-card";
 // import { ConfigurationCard } from "./configuration-card";
-import { ExcelPreviewCard } from "./excel-preview-card";
+// import { ExcelPreviewCard } from "./excel-preview-card";
 import { useState } from "react";
 import { ExcelConfig } from "@/lib/excel-generator";
-import { ExcelField, FormDefinition, FormJSON } from "@/types";
+import { ExcelField, FormDefinition, FormFile, FormJSON } from "@/types";
 import { mapFieldType } from "@/lib/field-type-mapper";
 
 import { Header } from "./layout/header";
 import { Footer } from "./layout/footer";
+import { FolderUploadCard } from "./folder-upload-card";
+import { ExcelPreviewMultipleCard } from "./excel-preview-multiple-card";
 
 export default function Converter() {
   const [forms, setForms] = useState<FormDefinition[]>([]);
-  const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
+  // const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
   //   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
   const [excelConfig] = useState<ExcelConfig>({
     includeConditionalFields: true,
@@ -44,9 +46,9 @@ export default function Converter() {
             description += "* Conditionally displayed *";
           }
 
-        //   if (String(field.fieldType).includes("entitySelect")) {
-        //     description += "(" + field.items?.join(",") + ")";
-        //   }
+          //   if (String(field.fieldType).includes("entitySelect")) {
+          //     description += "(" + field.items?.join(",") + ")";
+          //   }
           if (String(field.fieldType).includes("buttonBar")) {
             description += "(" + field.items?.join(",") + ")";
           }
@@ -66,23 +68,20 @@ export default function Converter() {
     return excelFields;
   };
 
-  const addFormFromFile = (
-    fileName: string,
-    fileContent: string
-  ): number | null => {
+  const addFormFromFile = (file: FormFile): number | null => {
     // Parse JSON content
     try {
-      const jsonContent = JSON.parse(fileContent) as FormJSON;
+      const jsonContent = JSON.parse(file.fileContent) as FormJSON;
       const mappedFields = mapFormToExcelFields(jsonContent);
       const form = {
         id: jsonContent.id,
-        fileName,
+        fileName: file.fileName,
         formName: jsonContent.title as string,
         jsonContent,
         parseData: mappedFields,
         uploadedAt: new Date(),
       };
-      setCurrentForm(form);
+      // setCurrentForm(form);
       setForms((forms) => [...forms, form]);
       return forms.length + 1;
     } catch (err) {
@@ -92,10 +91,13 @@ export default function Converter() {
     //
   };
 
-  const handleFormFileUpload = (fileName: string, fileContent: string) => {
-    addFormFromFile(fileName, fileContent);
-    // const formId = addFormFromFile(fileName, fileContent);
-    // setSelectedFormId(formId);
+  // const handleFormFileParse = (file: FormFile) => {
+  //   addFormFromFile(file);
+  // };
+
+  const handleBatchFormFileParse = (files: FormFile[]) => {
+    setForms(() => []);
+    files.forEach((file) => addFormFromFile(file));
   };
 
   return (
@@ -107,10 +109,8 @@ export default function Converter() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Panel - Upload & Configuration */}
           <div className="lg:col-span-2 space-y-6">
-            <FileUploadCard
-              //   onFormUploaded={(formId) => setSelectedFormId(formId)}
-              onFormUploaded={handleFormFileUpload}
-            />
+            {/* <FileUploadCard onFormParsed={handleFormFileParse} /> */}
+            <FolderUploadCard onBatchParsed={handleBatchFormFileParse} />
 
             {/* <ConfigurationCard
               config={excelConfig}
@@ -122,10 +122,22 @@ export default function Converter() {
           <div className="lg:col-span-2 space-y-6">
             {/* <FormPreviewCard form={selectedForm} /> */}
 
-            <ExcelPreviewCard
-              parseData={currentForm?.parseData || null}
+            <ExcelPreviewMultipleCard
+              forms={forms.map((f) => {
+                const orgNameEndIndex = String(f.fileName).indexOf("_");
+                const extIndex = String(f.fileName).indexOf('.');
+                const formTitle = String(f.fileName).slice(orgNameEndIndex + 1, extIndex);
+                return {
+                  rows: f.parseData,
+                  title: formTitle || (f.fileName as string),
+                };
+              })}
               config={excelConfig}
             />
+            {/* <ExcelPreviewCard
+              parseData={currentForm?.parseData || null}
+              config={excelConfig}
+            /> */}
           </div>
         </div>
       </main>
