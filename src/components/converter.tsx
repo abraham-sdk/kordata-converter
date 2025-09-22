@@ -41,9 +41,13 @@ export default function Converter() {
           if (field.editable !== undefined && field.editable === false) {
             description += description ? ";" : "" + "* Not Editable";
           }
+          
+          if (field.required !== undefined && field.required === true) {
+            description += description ? "; " : "" + "* Required";
+          }
 
           if (field.displayWhen) {
-            description += "* Conditionally displayed *";
+            description += description ? "; " : "" + "* Conditionally displayed *";
           }
 
           //   if (String(field.fieldType).includes("entitySelect")) {
@@ -125,11 +129,15 @@ export default function Converter() {
             <ExcelPreviewMultipleCard
               forms={forms.map((f) => {
                 const orgNameEndIndex = String(f.fileName).indexOf("_");
-                const extIndex = String(f.fileName).indexOf('.');
-                const formTitle = String(f.fileName).slice(orgNameEndIndex + 1, extIndex);
+                const extIndex = String(f.fileName).indexOf(".");
+                const formTitle = String(f.fileName).slice(
+                  orgNameEndIndex + 1,
+                  extIndex
+                );
+
                 return {
                   rows: f.parseData,
-                  title: formTitle || (f.fileName as string),
+                  title: formTitle || (f.formName as string),
                 };
               })}
               config={excelConfig}

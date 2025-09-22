@@ -216,12 +216,23 @@ export function generateExcelFileMultiple(
       };
     }
 
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      title ? String(title).slice(0, 31) : "Form Definition_" + (index + 1)
-    );
+    try {
+      // Add the worksheet to the workbook
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        title ? String(title).slice(0, 31) : "Form_" + (index + 1)
+      );
+    } catch (error) {
+      console.error("Error adding sheet: ", error);
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        title
+          ? String(title).slice(-31)
+          : "Form_" + (Math.random() * 1000 + 1)
+      );
+    }
   });
 
   // Generate buffer based on output format

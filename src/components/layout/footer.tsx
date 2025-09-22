@@ -1,9 +1,7 @@
 import pkg from "../../../package.json";
 
 export function Footer() {
-  {
-    /* Footer */
-  }
+  
   return (
     <footer className="bg-card border-t border-border mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -12,18 +10,6 @@ export function Footer() {
             <span className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Kordata.
             </span>
-            {/* <a
-                href="#"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Documentation
-              </a>
-              <a
-                href="#"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Support
-              </a> */}
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-xs text-muted-foreground">
