@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Eye, Expand, FileText, Info } from "lucide-react";
 import {
   getFieldTypeIconComponent,
-  mapFieldType,
+  mapFormFieldType,
 } from "@/lib/field-type-mapper";
-import { FormDefinition } from "@/types";
+import { FormTemplateDefinition } from "@/types";
 
 interface FormPreviewCardProps {
-  form?: FormDefinition;
+  form?: FormTemplateDefinition;
 }
 
 export function FormPreviewCard({ form }: FormPreviewCardProps) {
@@ -163,7 +163,7 @@ export function FormPreviewCard({ form }: FormPreviewCardProps) {
                         className="text-xs"
                         data-testid={`badge-field-type-${pageIndex}-${fieldIndex}`}
                       >
-                        {mapFieldType(field.fieldType)}
+                        {mapFormFieldType(field.fieldType)}
                       </Badge>
                     </div>
                   ))
