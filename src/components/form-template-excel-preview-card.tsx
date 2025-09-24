@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, Copy, Download, Check } from "lucide-react";
+import { Table, Copy, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   ExcelConfig,

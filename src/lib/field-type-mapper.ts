@@ -20,6 +20,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function stringifyViewColumnValueObject(value: any): string {
   if (!value) return "";
 
@@ -36,6 +37,7 @@ export function stringifyViewColumnValueObject(value: any): string {
       return `display: "${value.display}"`;
     }
     if (value.concat && Array.isArray(value.concat)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const parts = value.concat.map((part: any) =>
         stringifyViewColumnValueObject(part)
       );
