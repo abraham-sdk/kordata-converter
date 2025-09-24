@@ -297,8 +297,8 @@ export function generateExcelFileForViewTemplates(
       if (!worksheet[cellAddress]) continue;
 
       worksheet[cellAddress].s = {
-        font: { bold: true, sz: 24, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "366EF7" } },
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "2582b0" } },
         alignment: { horizontal: "center", vertical: "center" },
       };
     }
