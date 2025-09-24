@@ -20,7 +20,65 @@ import {
   LucideIcon,
 } from "lucide-react";
 
-export function mapFieldType(type: string): string {
+export function stringifyViewColumnValueObject(value: any): string {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "object") {
+    // Handle different value object types
+    if (value.fetch) {
+      return `fetch: ${value.fetch}`;
+    }
+    if (value.display) {
+      return `display: "${value.display}"`;
+    }
+    if (value.concat && Array.isArray(value.concat)) {
+      const parts = value.concat.map((part: any) =>
+        stringifyViewColumnValueObject(part)
+      );
+      return `concat: [${parts.join(", ")}]`;
+    }
+    if (value.evaluate) {
+      return `evaluate: ${
+        value.evaluate.expression || JSON.stringify(value.evaluate)
+      }`;
+    }
+    if (value.count) {
+      const target = value.count.of || value.count;
+      return `count: ${stringifyViewColumnValueObject(target)}`;
+    }
+    if (value.if) {
+      return `if: ${JSON.stringify(
+        value.if.condition
+      )} then ${stringifyViewColumnValueObject(value.if.then)}${
+        value.if.else
+          ? ` else ${stringifyViewColumnValueObject(value.if.else)}`
+          : ""
+      }`;
+    }
+    if (value.map) {
+      return `map: ${stringifyViewColumnValueObject(
+        value.map.array
+      )} with ${stringifyViewColumnValueObject(value.map.operation)}`;
+    }
+    if (value.fetchEntityType) {
+      return `fetchEntityType: ${value.fetchEntityType.entityType}.${value.fetchEntityType.property}`;
+    }
+    if (value.loadAttachment) {
+      return `loadAttachment: ${value.loadAttachment.attachmentProperty}`;
+    }
+
+    // Fallback for unknown object types
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+export function mapFormFieldType(type: string): string {
   const typeMap: Record<string, string> = {
     // Basic input types
     textInput: "Text Input",

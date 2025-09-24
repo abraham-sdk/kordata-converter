@@ -6,10 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { FormFile } from "@/types";
 
 interface FolderUploadCardProps {
+  fileType?: "forms" | "views";
   onBatchParsed: (results: FormFile[]) => void;
 }
 
-export function FolderUploadCard({ onBatchParsed }: FolderUploadCardProps) {
+export function FolderUploadCard({ fileType, onBatchParsed }: FolderUploadCardProps) {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isParsing, setIsParsing] = useState(false);
@@ -115,7 +116,7 @@ export function FolderUploadCard({ onBatchParsed }: FolderUploadCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Files className="h-5 w-5 text-primary" />
-          <span>Upload JSON Forms (Batch)</span>
+          <span>Upload JSON {fileType === 'forms' ? 'Form Definitions' : 'View Templates'} (Batch)</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

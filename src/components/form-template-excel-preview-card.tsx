@@ -2,20 +2,35 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, Copy, Download } from "lucide-react";
+import { Table, Copy, Download, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ExcelConfig, generateExcelFile } from "@/lib/excel-generator";
+import {
+  ExcelConfig,
+  generateExcelFileForFormTemplates,
+} from "@/lib/excel-generator";
 import { FormTemplateExcelField } from "@/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
-interface ExcelPreviewCardProps {
-  parseData: FormTemplateExcelField[] | null;
+interface FormTemplateExcelPreviewCardProps {
+  forms: { rows: FormTemplateExcelField[]; title: string }[];
   config: ExcelConfig;
 }
 
-export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
+export function FormTemplateExcelPreviewCard({
+  forms,
+  config,
+}: FormTemplateExcelPreviewCardProps) {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+
+  const [selectedForm, setSelectedForm] = useState(0);
 
   // Create a stable, serialized config key for React Query
   //   const configKey = useMemo(
@@ -32,12 +47,12 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
   //   );
 
   const downloadData = () => {
-    if (!parseData) throw new Error("No data to download");
-    const blob = generateExcelFile(parseData, config);
+    if (!forms.length) throw new Error("No data to download");
+    const blob = generateExcelFileForFormTemplates(forms);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `form-definition.${config.outputFormat}`;
+    a.download = `${parseData.title}-form-definition.${config.outputFormat}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -50,6 +65,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
   };
 
   const copyToClipboard = async () => {
+    const parseData = forms[selectedForm];
     if (!parseData) return;
 
     const csvContent = [
@@ -61,7 +77,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
         "Field Type",
         "Description / Options",
       ],
-      ...parseData.map((row: FormTemplateExcelField) => [
+      ...parseData.rows.map((row: FormTemplateExcelField) => [
         row.formTitle,
         row.pageTitle,
         row.sectionTitle,
@@ -89,7 +105,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
     }
   };
 
-  if (!parseData) {
+  if (!forms.length) {
     return (
       <Card>
         <CardHeader>
@@ -131,7 +147,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
   //     );
   //   }
 
-  if (!parseData) {
+  if (!forms.length) {
     return (
       <Card>
         <CardHeader>
@@ -158,10 +174,11 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
     );
   }
 
+  const parseData = forms[selectedForm];
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, parseData.length);
-  const currentRows = parseData.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(parseData.length / pageSize);
+  const endIndex = Math.min(startIndex + pageSize, parseData.rows.length);
+  const currentRows = parseData.rows.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(parseData.rows.length / pageSize);
 
   return (
     <Card>
@@ -172,6 +189,21 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
             <span>Excel Output Preview</span>
           </div>
           <div className="flex items-center space-x-2">
+            <Select
+              onValueChange={(p) => setSelectedForm(parseInt(p))}
+              value={`${selectedForm}`}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a form" />
+              </SelectTrigger>
+              <SelectContent>
+                {forms.map((form, index) => (
+                  <SelectItem key={`form-sheet-${index}`} value={`${index}`}>
+                    {form.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="sm"
@@ -185,7 +217,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
               variant="outline"
               size="sm"
               onClick={downloadData}
-              disabled={!parseData}
+              disabled={!forms.length}
               data-testid="button-download-excel"
             >
               <Download className="h-4 w-4 mr-1" />
@@ -206,6 +238,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
                 <th className="text-left p-3 font-medium">Section</th>
                 <th className="text-left p-3 font-medium">Field Name</th>
                 <th className="text-left p-3 font-medium">Field Type</th>
+                <th className="text-left p-3 font-medium">Is Required?</th>
                 <th className="text-left p-3 font-medium">
                   Description / Options
                 </th>
@@ -232,7 +265,7 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
                   </td>
                   <td
                     className="p-3"
-                    data-testid={`cell-page-${startIndex + index}`}
+                    data-testid={`cell-section-${startIndex + index}`}
                   >
                     {row.sectionTitle}
                   </td>
@@ -251,8 +284,9 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
                       {row.fieldType}
                     </Badge>
                   </td>
+                  <td className="p-3 font-bold">{row.isRequired ? "Yes" : ""}</td>
                   <td
-                    className="p-3 text-muted-foreground text-xs"
+                    className="p-3 text-muted-foreground text-xs max-w-sm overflow-wrap text-pretty"
                     data-testid={`cell-description-${startIndex + index}`}
                   >
                     {row.description}
@@ -270,7 +304,8 @@ export function ExcelPreviewCard({ parseData, config }: ExcelPreviewCardProps) {
             <span data-testid="text-showing-range">
               {startIndex + 1}-{endIndex}
             </span>{" "}
-            of <span data-testid="text-total-rows">{parseData.length}</span>{" "}
+            of{" "}
+            <span data-testid="text-total-rows">{parseData.rows.length}</span>{" "}
             rows
           </div>
           <div className="flex space-x-2">

@@ -1,9 +1,18 @@
-export interface FormDefinition {
+export interface FormTemplateDefinition {
   id: string;
   fileName: string;
   formName: string | null;
-  jsonContent: FormJSON;
-  parseData: ExcelField[];
+  jsonContent: FormTemplateJSON;
+  parseData: FormTemplateExcelField[];
+  uploadedAt: Date;
+}
+
+export interface ViewTemplateDefinition {
+  id: string;
+  fileName: string;
+  viewName: string | null;
+  jsonContent: ViewTemplateJSON;
+  parseData: ViewTemplateExcelField[];
   uploadedAt: Date;
 }
 
@@ -21,15 +30,26 @@ export interface FormJSONField {
   hidden?: boolean;
   required?: boolean;
 
-  displayWhen?: boolean;
-  editableWhen?: boolean;
-  requiredWhen?: boolean;
+  displayWhen?: string;
+  editableWhen?: string;
+  requiredWhen?: string;
 
   description?: string;
 
   itemView?: string;
   items?: string[];
 
+  // autoUpdate: {
+  //   track?: string;
+  //   path?: string;
+  //   set?: any;
+  //   when?: {
+  //     fieldId?: string;
+  //     qualifier?: string;
+  //     target?: string
+  //   };
+  // };
+  autoUpdate?: string;
   fieldType: string;
   id: string;
   path?: string;
@@ -43,7 +63,7 @@ export interface FormJSONField {
   };
 }
 
-export interface FormJSON {
+export interface FormTemplateJSON {
   id: string;
   organization: string;
   title?: string;
@@ -62,11 +82,47 @@ export interface FormJSON {
   updatedAt?: string;
 }
 
-export interface ExcelField {
+export interface ViewColumn {
+  title?: string;
+  dataType?: string;
+  value:
+    | { fetch: string }
+    | { count: string }
+    | { loadAttachment: { from: string; name: string } };
+}
+
+export interface ViewTemplateJSON {
+  id: string;
+  organization: string;
+  type?: string;
+  title?: {
+    dataType?: string;
+    title?: string;
+    value?: { fetch: string } | { count: string };
+  };
+  filters?: Record<string, { value: { fetch: string } | { count: string } }>;
+  entityType?: string;
+  columns: ViewColumn[];
+  createdAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+
+export interface FormTemplateExcelField {
   formTitle: string;
   pageTitle: string;
   sectionTitle: string;
+  isRequired?: boolean;
   fieldType: string;
   fieldName: string;
   description: string;
+}
+
+export interface ViewTemplateExcelField {
+  viewTitle: string;
+  columnTitle: string;
+  dataType: string;
+  valueDefinition: string;
+  description?: string;
 }

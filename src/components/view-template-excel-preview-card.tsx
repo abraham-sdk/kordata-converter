@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, Copy, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ExcelConfig, generateExcelFileMultiple } from "@/lib/excel-generator";
-import { ExcelField } from "@/types";
+import { ExcelConfig, generateExcelFileForViewTemplates } from "@/lib/excel-generator";
+import { ViewTemplateExcelField } from "@/types";
 import {
   Select,
   SelectContent,
@@ -14,20 +14,20 @@ import {
   SelectValue,
 } from "./ui/select";
 
-interface ExcelPreviewMultipleCardProps {
-  forms: { rows: ExcelField[]; title: string }[];
+interface ViewTemplateExcelPreviewCardProps {
+  views: { rows: ViewTemplateExcelField[]; title: string }[];
   config: ExcelConfig;
 }
 
-export function ExcelPreviewMultipleCard({
-  forms,
+export function ViewTemplateExcelPreviewCard({
+  views,
   config,
-}: ExcelPreviewMultipleCardProps) {
+}: ViewTemplateExcelPreviewCardProps) {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  const [selectedForm, setSelectedForm] = useState(0);
+  const [selectedView, setSelectedView] = useState(0);
 
   // Create a stable, serialized config key for React Query
   //   const configKey = useMemo(
@@ -44,12 +44,12 @@ export function ExcelPreviewMultipleCard({
   //   );
 
   const downloadData = () => {
-    if (!forms.length) throw new Error("No data to download");
-    const blob = generateExcelFileMultiple(forms);
+    if (!views.length) throw new Error("No data to download");
+    const blob = generateExcelFileForViewTemplates(views);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${parseData.title}-form-definition.${config.outputFormat}`;
+    a.download = `${parseData.title}-view-definition.${config.outputFormat}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -62,24 +62,22 @@ export function ExcelPreviewMultipleCard({
   };
 
   const copyToClipboard = async () => {
-    const parseData = forms[selectedForm];
+    const parseData = views[selectedView];
     if (!parseData) return;
 
     const csvContent = [
       [
-        "Form Name",
-        "Page",
-        "Section",
-        "Field Name",
-        "Field Type",
+        "View Name",
+        "Column",
+        "Value Definition",
+        "Data Type",
         "Description / Options",
       ],
-      ...parseData.rows.map((row: ExcelField) => [
-        row.formTitle,
-        row.pageTitle,
-        row.sectionTitle,
-        row.fieldName,
-        row.fieldType,
+      ...parseData.rows.map((row: ViewTemplateExcelField) => [
+        row.viewTitle,
+        row.columnTitle,
+        row.valueDefinition,
+        row.dataType,
         row.description,
       ]),
     ]
@@ -102,7 +100,7 @@ export function ExcelPreviewMultipleCard({
     }
   };
 
-  if (!forms.length) {
+  if (!views.length) {
     return (
       <Card>
         <CardHeader>
@@ -115,7 +113,7 @@ export function ExcelPreviewMultipleCard({
           <div className="text-center py-8">
             <Table className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              Upload and parse a form to see the Excel preview
+              Upload and parse a view template to see the Excel preview
             </p>
           </div>
         </CardContent>
@@ -144,7 +142,7 @@ export function ExcelPreviewMultipleCard({
   //     );
   //   }
 
-  if (!forms.length) {
+  if (!views.length) {
     return (
       <Card>
         <CardHeader>
@@ -156,7 +154,7 @@ export function ExcelPreviewMultipleCard({
         <CardContent>
           <div className="text-center py-8">
             <p className="text-muted-foreground">
-              Failed to parse form definition
+              Failed to parse view template definition
             </p>
             <Button
               variant="outline"
@@ -171,7 +169,7 @@ export function ExcelPreviewMultipleCard({
     );
   }
 
-  const parseData = forms[selectedForm];
+  const parseData = views[selectedView];
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, parseData.rows.length);
   const currentRows = parseData.rows.slice(startIndex, endIndex);
@@ -187,16 +185,16 @@ export function ExcelPreviewMultipleCard({
           </div>
           <div className="flex items-center space-x-2">
             <Select
-              onValueChange={(p) => setSelectedForm(parseInt(p))}
-              value={`${selectedForm}`}
+              onValueChange={(p) => setSelectedView(parseInt(p))}
+              value={`${selectedView}`}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a form" />
+                <SelectValue placeholder="Select a view" />
               </SelectTrigger>
               <SelectContent>
-                {forms.map((form, index) => (
-                  <SelectItem key={`form-sheet-${index}`} value={`${index}`}>
-                    {form.title}
+                {views.map((view, index) => (
+                  <SelectItem key={`view-sheet-${index}`} value={`${index}`}>
+                    {view.title}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -214,7 +212,7 @@ export function ExcelPreviewMultipleCard({
               variant="outline"
               size="sm"
               onClick={downloadData}
-              disabled={!forms.length}
+              disabled={!views.length}
               data-testid="button-download-excel"
             >
               <Download className="h-4 w-4 mr-1" />
@@ -230,11 +228,10 @@ export function ExcelPreviewMultipleCard({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left p-3 font-medium">Form Name</th>
-                <th className="text-left p-3 font-medium">Page</th>
-                <th className="text-left p-3 font-medium">Section</th>
-                <th className="text-left p-3 font-medium">Field Name</th>
-                <th className="text-left p-3 font-medium">Field Type</th>
+                <th className="text-left p-3 font-medium">View</th>
+                <th className="text-left p-3 font-medium">Column</th>
+                <th className="text-left p-3 font-medium">Value</th>
+                <th className="text-left p-3 font-medium">Data Type</th>
                 <th className="text-left p-3 font-medium">
                   Description / Options
                 </th>
@@ -249,27 +246,21 @@ export function ExcelPreviewMultipleCard({
                 >
                   <td
                     className="p-3"
-                    data-testid={`cell-form-name-${startIndex + index}`}
+                    data-testid={`cell-view-name-${startIndex + index}`}
                   >
-                    {row.formTitle}
+                    {row.viewTitle}
                   </td>
                   <td
                     className="p-3"
-                    data-testid={`cell-page-${startIndex + index}`}
+                    data-testid={`cell-column-name-${startIndex + index}`}
                   >
-                    {row.pageTitle}
+                    {row.columnTitle}
                   </td>
                   <td
                     className="p-3"
-                    data-testid={`cell-page-${startIndex + index}`}
+                    data-testid={`cell-value-definition-${startIndex + index}`}
                   >
-                    {row.sectionTitle}
-                  </td>
-                  <td
-                    className="p-3"
-                    data-testid={`cell-field-name-${startIndex + index}`}
-                  >
-                    {row.fieldName}
+                    {row.valueDefinition}
                   </td>
                   <td className="p-3">
                     <Badge
@@ -277,7 +268,7 @@ export function ExcelPreviewMultipleCard({
                       className="text-xs"
                       data-testid={`badge-field-type-${startIndex + index}`}
                     >
-                      {row.fieldType}
+                      {row.dataType}
                     </Badge>
                   </td>
                   <td
