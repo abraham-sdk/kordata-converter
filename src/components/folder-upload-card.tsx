@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FormFile } from "@/types";
 
 interface FolderUploadCardProps {
-  fileType?: "forms" | "views";
+  fileType?: "forms" | "views" | "roles";
   onBatchParsed: (results: FormFile[]) => void;
 }
 

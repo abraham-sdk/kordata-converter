@@ -13,6 +13,9 @@ import {
   ViewTemplateDefinition,
   ViewTemplateExcelField,
   ViewTemplateJSON,
+  RoleTemplateDefinition,
+  RoleTemplateJSON,
+  RoleTemplateExcelField,
 } from "@/types";
 import {
   mapFormFieldType,
@@ -26,10 +29,12 @@ import { FormTemplateExcelPreviewCard } from "./form-template-excel-preview-card
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, FileText } from "lucide-react";
 import { ViewTemplateExcelPreviewCard } from "./view-template-excel-preview-card";
+import { RoleTemplateExcelPreviewCard } from "./role-template-excel-preview-card";
 
 export default function Converter() {
   const [forms, setForms] = useState<FormTemplateDefinition[]>([]);
   const [views, setViews] = useState<ViewTemplateDefinition[]>([]);
+  const [roles, setRoles] = useState<RoleTemplateDefinition[]>([]);
   // const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
   //   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
   const [excelConfig] = useState<ExcelConfig>({
@@ -41,7 +46,24 @@ export default function Converter() {
     templateStyle: "standard",
   });
 
-  const [resourceType, setResourceType] = useState<"forms" | "views">("forms");
+  const [resourceType, setResourceType] = useState<"forms" | "views" | "roles">(
+    "forms"
+  );
+
+  const mapRoleToExcelFields = (
+    json: RoleTemplateJSON
+  ): RoleTemplateExcelField[] => {
+    const excelFields: RoleTemplateExcelField[] = [];
+    console.log("Mapping role to excel fields: ", json);
+
+    excelFields.push({
+      roleTitle: String(json.id).split("_")[1] || "None",
+      webModules: json.webModules?.length ? json.webModules.map(m => String(m).split("_")[1]).join(", ") : "None",
+      mobileModules: json.modules?.length ? json.modules.map(m => String(m).split("_")[1]).join(", ") : "None",
+    });
+
+    return excelFields;
+  };
 
   const mapViewToExcelFields = (
     json: ViewTemplateJSON
@@ -60,6 +82,7 @@ export default function Converter() {
 
     return excelFields;
   };
+
   const mapFormToExcelFields = (
     json: FormTemplateJSON
   ): FormTemplateExcelField[] => {
@@ -163,6 +186,21 @@ export default function Converter() {
   const addFormFromFile = (file: FormFile): number | null => {
     // Parse JSON content
     try {
+      if (resourceType === "roles") {
+        const jsonContent = JSON.parse(file.fileContent) as RoleTemplateJSON;
+        const mappedFields = mapRoleToExcelFields(jsonContent);
+        const role = {
+          id: jsonContent.id,
+          fileName: file.fileName,
+          roleName: jsonContent.title || null,
+          jsonContent,
+          parseData: mappedFields,
+          uploadedAt: new Date(),
+        };
+        setRoles((roles) => [...roles, role]);
+        return views.length + 1;
+      }
+
       if (resourceType === "views") {
         const jsonContent = JSON.parse(file.fileContent) as ViewTemplateJSON;
         const mappedFields = mapViewToExcelFields(jsonContent);
@@ -174,7 +212,6 @@ export default function Converter() {
           parseData: mappedFields,
           uploadedAt: new Date(),
         };
-        // setCurrentForm(form);
         setViews((views) => [...views, view]);
         return views.length + 1;
       }
@@ -190,25 +227,17 @@ export default function Converter() {
           parseData: mappedFields,
           uploadedAt: new Date(),
         };
-        console.log("Form added: ", form);
-        // setCurrentForm(form);
+
         setForms((forms) => [...forms, form]);
         return forms.length + 1;
       }
-
-      console.error("Unknown resource type: ", resourceType);
 
       return null;
     } catch (err) {
       console.error("Parsing form definition: ", err);
       return null;
     }
-    //
   };
-
-  // const handleFormFileParse = (file: FormFile) => {
-  //   addFormFromFile(file);
-  // };
 
   const handleBatchFormFileParse = (files: FormFile[]) => {
     setForms(() => []);
@@ -231,7 +260,7 @@ export default function Converter() {
           }}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger
               value="forms"
               className="flex items-center space-x-2"
@@ -247,6 +276,14 @@ export default function Converter() {
             >
               <Table className="h-4 w-4" />
               <span>View Templates</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="roles"
+              className="flex items-center space-x-2"
+              data-testid="tab-roles"
+            >
+              <Table className="h-4 w-4" />
+              <span>Role</span>
             </TabsTrigger>
           </TabsList>
 
@@ -333,6 +370,37 @@ export default function Converter() {
               parseData={currentForm?.parseData || null}
               config={excelConfig}
             /> */}
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="roles" className="space-y-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Panel - Upload & Configuration */}
+              <div className="lg:col-span-2 space-y-6">
+                <FolderUploadCard
+                  fileType={resourceType}
+                  onBatchParsed={handleBatchFormFileParse}
+                />
+              </div>
+
+              {/* Right Panel - Preview & Results */}
+              <div className="lg:col-span-2 space-y-6">
+                <RoleTemplateExcelPreviewCard
+                  roles={roles.map((f) => {
+                    const orgNameEndIndex = String(f.fileName).indexOf("_");
+                    const extIndex = String(f.fileName).indexOf(".");
+                    const viewTitle = String(f.fileName).slice(
+                      orgNameEndIndex + 1,
+                      extIndex
+                    );
+
+                    return {
+                      rows: f.parseData,
+                      title: viewTitle || (f.roleName as string),
+                    };
+                  })}
+                  config={excelConfig}
+                />
               </div>
             </div>
           </TabsContent>

@@ -16,6 +16,15 @@ export interface ViewTemplateDefinition {
   uploadedAt: Date;
 }
 
+export interface RoleTemplateDefinition {
+  id: string;
+  fileName: string;
+  roleName: string | null;
+  jsonContent: RoleTemplateJSON;
+  parseData: RoleTemplateExcelField[];
+  uploadedAt: Date;
+}
+
 export interface FormFile {
   id?: string;
   fileName: string;
@@ -109,6 +118,19 @@ export interface ViewTemplateJSON {
   updatedAt?: string;
 }
 
+export interface RoleTemplateJSON {
+  id: string;
+  organization: string;
+  title?: string;
+  type?: string;
+  modules?: string[];
+  webModules?: string[];
+  createdAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+
 export interface FormTemplateExcelField {
   formTitle: string;
   pageTitle: string;
@@ -125,4 +147,10 @@ export interface ViewTemplateExcelField {
   dataType: string;
   valueDefinition: string;
   description?: string;
+}
+
+export interface RoleTemplateExcelField {
+  roleTitle: string;
+  webModules: string;
+  mobileModules: string;
 }
